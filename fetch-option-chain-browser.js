@@ -76,13 +76,20 @@ async function fetchViaRealBrowser(symbol, type) {
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
   })
 
+  // Log every request that actually goes to nseindia.com, so if our
+  // guessed URL pattern is wrong, we can see what the real one was
+  // instead of guessing again blindly.
+  const nseRequests = []
+  page.on('request', (req) => {
+    if (req.url().includes('nseindia.com')) nseRequests.push(req.url())
+  })
+
   const apiUrlFragment = type === 'equity' ? 'option-chain-equities' : 'option-chain-indices'
   const pageUrl =
     type === 'equity'
       ? `https://www.nseindia.com/get-quotes/derivatives?symbol=${symbol}`
       : 'https://www.nseindia.com/option-chain'
 
-  // Start waiting for the response BEFORE navigating, so we don't miss it
   const responsePromise = page
     .waitForResponse((res) => res.url().includes(apiUrlFragment) && res.url().includes(symbol), {
       timeout: 20000
@@ -90,23 +97,35 @@ async function fetchViaRealBrowser(symbol, type) {
     .catch(() => null)
 
   await page.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => null)
-
-  // For the index page, the symbol dropdown defaults to NIFTY — if we
-  // want a different index, a real click would be needed. Keeping this
-  // simple for the first test: NIFTY on the index path works without
-  // any interaction.
+  await page.waitForTimeout(5000) // give any client-side JS extra time to fire its own requests
 
   const response = await responsePromise
+
+  // Diagnostics, captured regardless of success/failure
+  const finalUrl = page.url()
+  const title = await page.title().catch(() => 'unknown')
+  mkdirSync('data', { recursive: true })
+  await page.screenshot({ path: `data/debug-screenshot-${symbol.toLowerCase()}.png`, fullPage: false }).catch(() => null)
+
   await browser.close()
 
-  if (!response) return { error: 'No matching network response seen within timeout' }
-  if (!response.ok()) return { error: `NSE returned ${response.status()} (via real browser)` }
+  const diagnostics = {
+    finalUrl,
+    title,
+    nseRequestsSeen: nseRequests.length,
+    sampleNseRequests: nseRequests.slice(0, 15) // first 15, enough to spot the real pattern
+  }
+
+  if (!response) return { error: 'No matching network response seen within timeout', diagnostics }
+  if (!response.ok()) return { error: `NSE returned ${response.status()} (via real browser)`, diagnostics }
 
   const data = await response.json().catch(() => null)
   const records = data?.records
-  if (!records || !records.data) return { error: 'no-options', raw: data ? 'got JSON but no records.data' : 'could not parse JSON' }
+  if (!records || !records.data) {
+    return { error: 'no-options', raw: data ? 'got JSON but no records.data' : 'could not parse JSON', diagnostics }
+  }
 
-  return summarize(records)
+  return { ...summarize(records), diagnostics }
 }
 
 const [, , symbol, type] = process.argv
