@@ -19,10 +19,10 @@ jobs:
           node-version: 20
 
       - name: Fetch Nifty option chain
-        run: node fetch-option-chain.js NIFTY index
+        run: node github-actions-option-chain/fetch-option-chain.js NIFTY index
 
       - name: Fetch Bank Nifty option chain
-        run: node fetch-option-chain.js BANKNIFTY index
+        run: node github-actions-option-chain/fetch-option-chain.js BANKNIFTY index
 
       - name: Commit updated data
         run: |
