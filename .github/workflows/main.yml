@@ -1,0 +1,33 @@
+name: Fetch NSE option chain
+
+on:
+  schedule:
+    - cron: '*/10 3-10 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch Nifty option chain
+        run: node fetch-option-chain.js NIFTY index
+
+      - name: Fetch Bank Nifty option chain
+        run: node fetch-option-chain.js BANKNIFTY index
+
+      - name: Commit updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --staged --quiet || git commit -m "Update option chain data"
+          git push
