@@ -1,4 +1,5 @@
 {
-  "error": "NSE returned 404",
-  "fetchedAt": "2026-09-12T04:04:03.118Z"
+  "error": "No matching network response seen within timeout",
+  "fetchedAt": "2026-09-12T04:18:21.175Z",
+  "method": "headless-browser"
 }
