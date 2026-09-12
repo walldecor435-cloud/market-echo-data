@@ -23,8 +23,8 @@ jobs:
           npm install playwright
           npx playwright install --with-deps chromium
 
-      - name: Fetch Nifty option chain (via real browser)
-        run: node fetch-option-chain-browser.js NIFTY index
+      - name: Fetch BSE option chain
+        run: node fetch-bse-option-chain.js
 
       - name: Commit updated data
         run: |
