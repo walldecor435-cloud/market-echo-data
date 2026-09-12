@@ -1,5 +1,13 @@
 {
   "error": "No matching network response seen within timeout",
-  "fetchedAt": "2026-09-12T04:18:21.175Z",
+  "diagnostics": {
+    "finalUrl": "chrome-error://chromewebdata/",
+    "title": "",
+    "nseRequestsSeen": 1,
+    "sampleNseRequests": [
+      "https://www.nseindia.com/option-chain"
+    ]
+  },
+  "fetchedAt": "2026-09-12T04:23:19.315Z",
   "method": "headless-browser"
 }
