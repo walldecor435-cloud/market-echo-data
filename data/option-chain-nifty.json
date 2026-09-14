@@ -1,13 +1,4 @@
 {
-  "error": "No matching network response seen within timeout",
-  "diagnostics": {
-    "finalUrl": "chrome-error://chromewebdata/",
-    "title": "",
-    "nseRequestsSeen": 1,
-    "sampleNseRequests": [
-      "https://www.nseindia.com/option-chain"
-    ]
-  },
-  "fetchedAt": "2026-09-12T04:23:19.315Z",
-  "method": "headless-browser"
+  "error": "NSE returned 404",
+  "fetchedAt": "2026-09-14T03:12:41.839Z"
 }
